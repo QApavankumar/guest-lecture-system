@@ -8,10 +8,12 @@ const ADMIN_SESSION_KEY = 'tg_admin_auth_user';
 // Cached working base URL
 let resolvedBaseUrl = null;
 
+const LIVE_RENDER_API = 'https://guest-lecture-system.onrender.com/api';
+
 // Smart multi-target candidate list
-// Supports: PC Web, Android Studio Emulator (10.0.2.2), and Physical Android devices on Wi-Fi (192.168.101.39)
+// Priority: 1. Live Render Cloud Backend -> 2. Local Wi-Fi -> 3. Emulator bridge -> 4. Localhost
 const getCandidateUrls = () => {
-  if (import.meta.env.VITE_API_URL) return [import.meta.env.VITE_API_URL];
+  if (import.meta.env.VITE_API_URL) return [import.meta.env.VITE_API_URL, LIVE_RENDER_API];
 
   const isNative = typeof window !== 'undefined' && (
     window.Capacitor?.isNativePlatform?.() ||
@@ -22,15 +24,16 @@ const getCandidateUrls = () => {
 
   if (isNative) {
     return [
-      'http://192.168.101.39:5000/api', // PC Local Wi-Fi IP (physical devices & emulators)
-      'http://10.0.2.2:5000/api',       // Android Studio Emulator loopback bridge
+      LIVE_RENDER_API,                  // Primary: Live 24/7 Cloud Backend on Render
+      'http://192.168.101.39:5000/api', // Local Wi-Fi fallback
+      'http://10.0.2.2:5000/api',       // Android Studio Emulator bridge
       'http://localhost:5000/api'
     ];
   }
 
   return [
-    'http://localhost:5000/api',
-    'http://192.168.101.39:5000/api'
+    LIVE_RENDER_API,
+    'http://localhost:5000/api'
   ];
 };
 
